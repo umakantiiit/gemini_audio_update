@@ -4,7 +4,7 @@ import os
 from pathlib import Path
 import json
 
-genai.configure(api_key=st.secrets["gemini_api_key"])
+genai.configure(api_key="AIzaSyAss35k27ZeutHrSXcZhwx5k4-g6-YRtpQ")
 
 def upload_to_gemini(path, mime_type=None):
     """Uploads the given file to Gemini."""
