@@ -22,7 +22,7 @@ Prompt_for_audio_transcript = '''
       1-Number of Speakers: Identify and state the total number of unique speakers in the audio file.
 
       2-Transcript with Speaker Labels: Generate a transcript of the audio, labeling each segment of speech with the corresponding speaker (e.g., Speaker A, Speaker B, Speaker C, etc.). Ensure the transcript is clear, accurate, and easy to read.
-
+      3-For each point in the conversation, note the customer's emotion and provide a timeline in JSON format.
 Guidelines:
 
       -Use clear and concise language.
@@ -31,7 +31,22 @@ Guidelines:
 
 OUTPUT FORMAT:
       - I need a proper JSON as output
-      - The Json structure should represent the complete conversation with Speaker Information
+      - The Json structure should represent the complete conversation with Speaker Information alongwith emotion detected at each step.
+      {
+      Call Details:{
+        Number Of Speaker:
+        Transcript:{
+                 Speaker A:(If u cannot Find out then say Unknown)
+                 Voice : Extracted Text From Audio
+                 Emotion:
+                 Speaker B:(If u cannot Find out then say Unknown)
+                 Voice : Extracted Text From Audio
+                 Emotion:
+                 .........
+                    }
+      }
+      }
+
 
 '''
 
