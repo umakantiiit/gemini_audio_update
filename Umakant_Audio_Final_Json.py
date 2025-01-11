@@ -23,15 +23,15 @@ Prompt_for_audio_transcript = '''
       2-Transcript with Speaker Labels: Generate a transcript of the audio, labeling each segment of speech with the corresponding speaker (e.g., Speaker A, Speaker B, Speaker C, etc.). Ensure the transcript is clear, accurate, and easy to read.
       3-For each point in the conversation, note the customer's emotion and provide in text  format provided below.
 Guidelines:
-
+      - Donot put all the Speaker A conversation at a time.Transcript should be in Proper format according to timeline.
       -Use clear and concise language.
       -Also Use Proper Punctuations In the Transcript.
       -If there are overlapping speeches, make a note of it and attempt to separate the speakers as accurately as possible.
 
 OUTPUT FORMAT:
         No of Speakers:
-     - Speaker A(Name if possible):Extracted Conversation , Emotion:
-    Speaker B(Name if possible):Extracted conversation, Emotion :
+     - Speaker A(Name if possible): , Emotion:
+    Speaker B(Name if possible):, Emotion :
     ......
       - Provide the analysis in a  readable text format
 '''
