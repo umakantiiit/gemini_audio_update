@@ -2,6 +2,7 @@ import streamlit as st
 import google.generativeai as genai
 import os
 from pathlib import Path
+import json
 
 genai.configure(api_key=st.secrets["gemini_api_key"])
 
@@ -11,8 +12,8 @@ def upload_to_gemini(path, mime_type=None):
     return file
 
 generation_config = {
-    "temperature": 0.4,
-    "response_mime_type": "text/plain"  # Set to text/plain if the output is text
+    "temperature": 0.3,
+    "response_mime_type": "application/json"
 }
 
 Prompt_for_audio_transcript = '''
@@ -21,20 +22,28 @@ Prompt_for_audio_transcript = '''
       1-Number of Speakers: Identify and state the total number of unique speakers in the audio file.
 
       2-Transcript with Speaker Labels: Generate a transcript of the audio, labeling each segment of speech with the corresponding speaker (e.g., Speaker A, Speaker B, Speaker C, etc.). Ensure the transcript is clear, accurate, and easy to read.
-      3-For each point in the conversation, note the customer's emotion and provide in text  format provided below.
+      3-For each point in the conversation, note the customer's emotion and provide a timeline in JSON format.
 Guidelines:
-      - Donot put all the Speaker A conversation at a time.Transcript should be in Proper format according to timeline.REMEMBER TO PUT EMOTION IN EVERY SPEAKER CONVERSATION.I WANT TO TRACK EMOTION THROUGHOUT THE CONVERSATION.
+
       -Use clear and concise language.
       -Also Use Proper Punctuations In the Transcript.
-      -If there are overlapping speeches, make a note of it and attempt to separate the speakers as accurately as possible.
-
+      
 OUTPUT FORMAT:
-   ADHERE TO THE BELOW FORMAT FOR TEXT OUTPUT 
-        No of Speakers:
-     - Speaker A(Name if possible): , Emotion:
-    Speaker B(Name if possible):, Emotion :
-    ......
-      - Provide the analysis in a  readable text format
+      - I need a proper JSON as output
+      - The Json structure should represent the complete conversation with Speaker Information alongwith emotion detected at each step.
+      {
+      Call Details:{
+        Number Of Speaker:
+        Transcript:{
+                 Speaker A:(If u cannot Find out then say Unknown)
+                 Voice : Extracted Text From Audio
+                 Emotion:
+                 Speaker B:(If u cannot Find out then say Unknown)
+                 Voice : Extracted Text From Audio
+                 Emotion:
+                 .........}
+      }
+      }
 '''
 
 model = genai.GenerativeModel(
@@ -64,15 +73,21 @@ if uploaded_file is not None:
         
         if st.button("View Analysis"):
             response = model.generate_content([myaudio, Prompt_for_audio_transcript], generation_config=generation_config)
-            st.text_area("Analysis Result", response.text, height=300)
-            
-            # Add the download button
-            st.download_button(
-                label="Download Text Transcript",
-                data=response.text,
-                file_name="transcript.txt",
-                mime="text/plain"
-            )
+            try:
+                json_response = json.loads(response.text)
+                st.json(json_response, expanded=True)
+                
+                # Add the download button for JSON
+                st.download_button(
+                    label="Download JSON",
+                    data=json.dumps(json_response, indent=4),
+                    file_name="transcript.json",
+                    mime="application/json"
+                )
+                
+            except json.JSONDecodeError:
+                st.write("Here is the raw output from the model:")
+                st.text(response.text)
 
 # Clean up temporary files after session
 @st.cache_data()
