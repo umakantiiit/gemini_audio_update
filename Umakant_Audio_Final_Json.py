@@ -17,37 +17,73 @@ generation_config = {
 }
 
 Prompt_for_audio_transcript = '''
-"You are an advanced AI assistant specialized in audio processing and speaker diarization. Your task is to analyze an audio file and provide the following outputs:
+You are an advanced AI assistant specialized in audio processing, speaker diarization, and emotion detection. Your expertise lies in analyzing audio files, identifying speakers, transcribing conversations, and detecting emotions in real-time. Your task is to process an audio file from a call center and provide a detailed, structured output in JSON format.
+Task:
 
-      1-Number of Speakers: Identify and state the total number of unique speakers in the audio file.
+Number of Speakers: Identify and state the total number of unique speakers in the audio file.
 
-      2-Transcript with Speaker Labels: Generate a transcript of the audio, labeling each segment of speech with the corresponding speaker (e.g., Speaker A, Speaker B, Speaker C, etc.). Ensure the transcript is clear, accurate, and easy to read.
-      3-For each point in the conversation, note the customer's emotion and provide a timeline in JSON format.
+Transcript with Speaker Labels: Generate a clear and accurate transcript of the audio, labeling each segment of speech with the corresponding speaker (e.g., Speaker A, Speaker B, Speaker C, etc.). Use proper punctuation and formatting for readability.
+
+Emotion Detection: For each speaker at every point in the conversation, detect and note their emotion (e.g., happy, sad, angry, neutral, frustrated, etc.). Provide a timeline of emotions in JSON format.
+
 Guidelines:
+- Use clear, concise, and professional language.
+-Ensure the transcript is accurate and easy to read.
+-If a speaker cannot be identified, label them as "Unknown."
+-Emotions should be detected for each speaker at every conversational turn.
+-Follow the JSON output format strictly.
 
-      -Use clear and concise language.
-      -Also Use Proper Punctuations In the Transcript.
-      
-OUTPUT FORMAT:
-      - I need a proper JSON as output
-      - The Json structure should represent the complete conversation with Speaker Information alongwith emotion detected at each step.
+Output Format:
+Provide the output in the following JSON structure:
+{
+  "Call Details": {
+    "Number of Speakers": "<total_number_of_speakers>",
+    "Transcript": [
       {
-      Call Details:{
-        Number Of Speaker:
-        Transcript:{
-                 Speaker A:(If u cannot Find out then say Unknown)
-                 Voice : Extracted Text From Audio
-                 Emotion:
-                 Speaker B:(If u cannot Find out then say Unknown)
-                 Voice : Extracted Text From Audio
-                 Emotion:
-                 .........}
-      }
-      }
+        "Speaker": "<Speaker A/Unknown>",
+        "Voice": "<extracted_text_from_audio>",
+        "Emotion": "<detected_emotion>"
+      },
+      {
+        "Speaker": "<Speaker B/Unknown>",
+        "Voice": "<extracted_text_from_audio>",
+        "Emotion": "<detected_emotion>"
+      },
+      ...
+    ]
+  }
+}
+Example Output:
+{
+  "Call Details": {
+    "Number of Speakers": 2,
+    "Transcript": [
+      {
+        "Speaker": "Speaker A",
+        "Voice": "Hello, how can I assist you today?",
+        "Emotion": "neutral"
+      },
+      {
+        "Speaker": "Speaker B",
+        "Voice": "I’m having issues with my recent order.",
+        "Emotion": "frustrated"
+      },
+      {
+        "Speaker": "Speaker A",
+        "Voice": "I’m sorry to hear that. Can you provide your order number?",
+        "Emotion": "neutral"
+      },
+      ...
+    ]
+  }
+}
 '''
 
+system_prompt='''You are a highly skilled AI assistant with a deep understanding of audio analysis, natural language processing, and emotional intelligence. You are meticulous, detail-oriented, and committed to delivering accurate and structured results. Your goal is to provide a comprehensive analysis of the call center audio, ensuring the transcript is clear, emotions are accurately detected, and the output is well-organized for further use.'''
+
 model = genai.GenerativeModel(
-   model_name="gemini-1.5-flash",
+   model_name="gemini-1.5-pro-002",
+   system_instruction=system_prompt
 )
 
 st.title("Welcome to CurateAI Audio Assistant")
