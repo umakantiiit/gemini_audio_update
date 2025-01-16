@@ -4,18 +4,22 @@ import os
 from pathlib import Path
 import json
 
+# Configure the generative AI API
 genai.configure(api_key=st.secrets["gemini_api_key"])
 
+# Helper function to upload files to Gemini
 def upload_to_gemini(path, mime_type=None):
     """Uploads the given file to Gemini."""
     file = genai.upload_file(path, mime_type=mime_type)
     return file
 
+# Common generation configuration
 generation_config = {
     "temperature": 0.3,
     "response_mime_type": "application/json"
 }
 
+# Prompts for the models
 Prompt_for_audio_transcript = '''
 You are an advanced AI assistant specialized in audio processing, speaker diarization, and emotion detection. Your expertise lies in analyzing audio files, identifying speakers, transcribing conversations, and detecting emotions in real-time. Your task is to process an audio file from a call center and provide a detailed, structured output in JSON format.
 Task:
@@ -79,51 +83,139 @@ Example Output:
 }
 '''
 
-system_prompt='''You are a highly skilled AI assistant with a deep understanding of audio analysis, natural language processing, and emotional intelligence. You are meticulous, detail-oriented, and committed to delivering accurate and structured results. Your goal is to provide a comprehensive analysis of the call center audio, ensuring the transcript is clear, emotions are accurately detected, and the output is well-organized for further use.'''
 
-model = genai.GenerativeModel(
-   model_name="gemini-1.5-pro-002",
-   system_instruction=system_prompt
+system_prompt_audio = '''You are a highly skilled AI assistant with a deep understanding of audio analysis, natural language processing, and emotional intelligence. You are meticulous, detail-oriented, and committed to delivering accurate and structured results. Your goal is to provide a comprehensive analysis of the call center audio, ensuring the transcript is clear, emotions are accurately detected, and the output is well-organized for further use.'''
+
+
+system_prompt_json = '''You are an AI trained in analyzing customer service call transcripts. Your expertise lies in emotion detection, summarization, and extracting key insights from conversations. You are meticulous, detail-oriented, and capable of providing structured outputs in JSON format.'''
+
+
+prompt_transcript_to_output = '''
+Analyze the provided JSON input, which contains a customer service call transcript with emotion labels for each speaker. Extract the following details and present them in a structured JSON format:
+	1- Emotion Tracking of Clients: A list of emotions expressed by the client (Speaker B) throughout the conversation.
+	2-Emotion Tracking of Agents: A list of emotions expressed by the agent (Speaker A) throughout the conversation.
+	3-Important Words Used in the Conversation: A list of key words or phrases that are significant to the conversation (e.g., billing, late fee, card expired, etc.).
+	4-Questions Asked by the Customer: A list of questions posed by the client during the conversation.
+	5-Resolutions Given by the Agent: A list of resolutions or actions taken by the agent to address the client's concerns.
+	6-Important Conclusion and Summary of Conversation: A concise summary of the conversation, including the main issue, resolution, and any additional actions taken.
+	7-Client Satisfaction: A boolean value (true or false) indicating whether the client seemed satisfied with the agent's response based on their emotions and statements.
+	
+Input:
+The JSON input provided contains the call transcript with speaker labels, their statements, and emotion labels.
+
+Output Format:
+Your output must be in JSON format, structured as follows:
+{
+  "Emotion Tracking of Clients": ["emotion1", "emotion2", ...],
+  "Emotion Tracking of Agents": ["emotion1", "emotion2", ...],
+  "Important Words Used in the Conversation": ["word1", "word2", ...],
+  "Questions Asked by the Customer": ["question1", "question2", ...],
+  "Resolutions Given by the Agent": ["resolution1", "resolution2", ...],
+  "Important Conclusion and Summary of Conversation": "summary text",
+  "Client Satisfaction": true/false
+}
+
+Example Output:
+Here’s an example of how the output should look:
+{
+  "Emotion Tracking of Clients": ["confused", "concerned", "neutral", "slightly-regretful", "relieved", "hopeful", "neutral", "grateful"],
+  "Emotion Tracking of Agents": ["neutral", "sympathetic", "neutral", "neutral", "neutral", "neutral", "neutral", "neutral"],
+  "Important Words Used in the Conversation": ["billing statement", "late fee", "card expired", "waive", "adjustment", "coverage", "savings"],
+  "Questions Asked by the Customer": [
+    "I'm calling because my latest billing statement seems higher than usual, and I don't understand why.",
+    "Would you be open to a quick review?"
+  ],
+  "Resolutions Given by the Agent": [
+    "Waived the late fee as a courtesy.",
+    "Updated the client's payment method to avoid future issues.",
+    "Offered to review the client's current plan for potential savings."
+  ],
+  "Important Conclusion and Summary of Conversation": "The client called regarding an unexpectedly high billing statement due to a late fee. The agent identified the issue as a result of an expired card and waived the late fee. The agent also updated the client's payment details and offered to review their current plan for potential savings. The client expressed relief and gratitude.",
+  "Client Satisfaction": true
+}
+
+Instructions:
+	- Carefully analyze the JSON input to extract the required details.
+	- Ensure the output is well-structured and adheres to the provided JSON format.
+	- Focus on accuracy in emotion tracking, key phrase extraction, and summarization.
+	- Use the client's final emotions and statements to determine satisfaction.
+'''
+
+# Initialize the model for both tasks
+model_audio = genai.GenerativeModel(
+    model_name="gemini-1.5-flash-002",
+    system_instruction=system_prompt_audio
+)
+
+model_json = genai.GenerativeModel(
+    model_name="gemini-1.5-pro-002",
+    system_instruction=system_prompt_json
 )
 
 st.title("Welcome to CurateAI Audio Assistant")
 
-uploaded_file = st.file_uploader("Upload an audio file", type=["mp3", "aac", "wav", "aiff"], accept_multiple_files=False)
+# Placeholder for storing the first API call result
+transcript_json = None
 
-if uploaded_file is not None:
-    file_extension = Path(uploaded_file.name).suffix.lower()
+# Audio file upload section
+uploaded_audio = st.file_uploader("Upload an audio file", type=["mp3", "aac", "wav", "aiff"], accept_multiple_files=False)
+
+if uploaded_audio is not None:
+    file_extension = Path(uploaded_audio.name).suffix.lower()
     valid_extensions = [".mp3", ".aac", ".wav", ".aiff"]
     
     if file_extension not in valid_extensions:
         st.error("AUDIO FILE IS NOT IN VALID FORMAT")
     else:
-        # Save the uploaded file temporarily
-        with open(uploaded_file.name, "wb") as f:
-            f.write(uploaded_file.getbuffer())
+        # Save the uploaded audio file temporarily
+        with open(uploaded_audio.name, "wb") as f:
+            f.write(uploaded_audio.getbuffer())
         
-        # Upload to Gemini
+        # Upload to Gemini and process
         mime_type = f"audio/{file_extension.strip('.') if file_extension != '.mp3' else 'mpeg'}"
-        myaudio = upload_to_gemini(uploaded_file.name, mime_type=mime_type)
+        myaudio = upload_to_gemini(uploaded_audio.name, mime_type=mime_type)
         
-        st.audio(uploaded_file, format=mime_type)
+        st.audio(uploaded_audio, format=mime_type)
         
-        if st.button("View Analysis"):
-            response = model.generate_content([myaudio, Prompt_for_audio_transcript], generation_config=generation_config)
+        if st.button("View Transcript"):
+            response_audio = model_audio.generate_content([myaudio, Prompt_for_audio_transcript], generation_config=generation_config)
             try:
-                json_response = json.loads(response.text)
-                st.json(json_response, expanded=True)
+                transcript_json = json.loads(response_audio.text)
+                st.json(transcript_json, expanded=True)
                 
-                # Add the download button for JSON
-                st.download_button(
-                    label="Download JSON",
-                    data=json.dumps(json_response, indent=4),
-                    file_name="transcript.json",
-                    mime="application/json"
-                )
+                st.session_state.transcript_json = transcript_json  # Store the result in session state
+                
+                # Inform the user the first step is completed
+                st.success("GREAT! Transcript generated successfully! You can now proceed to detailed analysis.")
                 
             except json.JSONDecodeError:
                 st.write("Here is the raw output from the model:")
-                st.text(response.text)
+                st.text(response_audio.text)
+
+# View Detailed Analysis button
+if st.session_state.get("transcript_json") is not None:
+    if st.button("View Detailed Analysis"):
+        transcript_json = st.session_state.transcript_json
+        # Convert transcript JSON to string for the second API call
+        transcript_str = json.dumps(transcript_json)
+        
+        # Upload to Gemini and process for detailed analysis
+        response_json = model_json.generate_content([transcript_str, prompt_transcript_to_output], generation_config=generation_config)
+        try:
+            detailed_analysis_json = json.loads(response_json.text)
+            st.json(detailed_analysis_json, expanded=True)
+            
+            # Add download button for final JSON output
+            st.download_button(
+                label="Download Detailed Analysis JSON",
+                data=json.dumps(detailed_analysis_json, indent=4),
+                file_name="detailed_analysis.json",
+                mime="application/json"
+            )
+            
+        except json.JSONDecodeError:
+            st.write("Here is the raw output from the model:")
+            st.text(response_json.text)
 
 # Clean up temporary files after session
 @st.cache_data()
