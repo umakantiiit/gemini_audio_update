@@ -26,7 +26,7 @@ Task:
 
 Number of Speakers: Identify and state the total number of unique speakers in the audio file.
 
-Transcript with Speaker Labels: Generate a clear and accurate transcript of the audio, labeling each segment of speech with the corresponding speaker (e.g., Speaker A, Speaker B, Speaker C, etc.). Use proper punctuation and formatting for readability.
+Transcript with Speaker Labels: Generate a clear and accurate transcript of the audio, labeling each segment of speech with the corresponding speaker (e.g.Agent,Client etc). Use proper punctuation and formatting for readability.
 
 Emotion Detection: For each speaker at every point in the conversation, detect and note their emotion (e.g., happy, sad, angry, neutral, frustrated, etc.). Provide a timeline of emotions in JSON format.
 
@@ -44,12 +44,12 @@ Provide the output in the following JSON structure:
     "Number of Speakers": "<total_number_of_speakers>",
     "Transcript": [
       {
-        "Speaker": "<Speaker A/Unknown>",
+        "Speaker": "<Agent/client/Unknown>",
         "Voice": "<extracted_text_from_audio>",
         "Emotion": "<detected_emotion>"
       },
       {
-        "Speaker": "<Speaker B/Unknown>",
+        "Speaker": "<Agent/client/Unknown>",
         "Voice": "<extracted_text_from_audio>",
         "Emotion": "<detected_emotion>"
       },
@@ -63,17 +63,17 @@ Example Output:
     "Number of Speakers": 2,
     "Transcript": [
       {
-        "Speaker": "Speaker A",
+        "Speaker": "Agent",
         "Voice": "Hello, how can I assist you today?",
         "Emotion": "neutral"
       },
       {
-        "Speaker": "Speaker B",
+        "Speaker": "Client",
         "Voice": "I’m having issues with my recent order.",
         "Emotion": "frustrated"
       },
       {
-        "Speaker": "Speaker A",
+        "Speaker": "Agent",
         "Voice": "I’m sorry to hear that. Can you provide your order number?",
         "Emotion": "neutral"
       },
@@ -82,7 +82,6 @@ Example Output:
   }
 }
 '''
-
 
 system_prompt_audio = '''You are a highly skilled AI assistant with a deep understanding of audio analysis, natural language processing, and emotional intelligence. You are meticulous, detail-oriented, and committed to delivering accurate and structured results. Your goal is to provide a comprehensive analysis of the call center audio, ensuring the transcript is clear, emotions are accurately detected, and the output is well-organized for further use.'''
 
@@ -95,7 +94,7 @@ Analyze the provided JSON input, which contains a customer service call transcri
 	1- Emotion Tracking of Clients: A list of emotions expressed by the client (Speaker B) throughout the conversation.
 	2-Emotion Tracking of Agents: A list of emotions expressed by the agent (Speaker A) throughout the conversation.
 	3-Important Words Used in the Conversation: A list of key words or phrases that are significant to the conversation (e.g., billing, late fee, card expired, etc.).
-	4-Questions Asked by the Customer: A list of questions posed by the client during the conversation.
+	4-Questions Asked by the Customer: ANALYSE THIS CAREFULLY.THIS SHOULD INCLUDE WHY A CLIENT CALLED CUSTOMER SERVICE.
 	5-Resolutions Given by the Agent: A list of resolutions or actions taken by the agent to address the client's concerns.
 	6-Important Conclusion and Summary of Conversation: A concise summary of the conversation, including the main issue, resolution, and any additional actions taken.
 	7-Client Satisfaction: A boolean value (true or false) indicating whether the client seemed satisfied with the agent's response based on their emotions and statements.
