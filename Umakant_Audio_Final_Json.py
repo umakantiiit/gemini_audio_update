@@ -94,10 +94,11 @@ Analyze the provided JSON input, which contains a customer service call transcri
 	1- Emotion Tracking of Clients: A list of emotions expressed by the client (Speaker B) throughout the conversation.
 	2-Emotion Tracking of Agents: A list of emotions expressed by the agent (Speaker A) throughout the conversation.
 	3-Important Words Used in the Conversation: A list of key words or phrases that are significant to the conversation (e.g., billing, late fee, card expired, etc.).
-	4-Questions Asked by the Customer: ANALYSE THIS CAREFULLY.THIS SHOULD INCLUDE WHY A CLIENT CALLED CUSTOMER SERVICE.
+	4-Questions Asked by the Customer:ANALYSE THIS CAREFULLY.THIS SHOULD INCLUDE WHY A CLIENT CALLED CUSTOMER SERVICE.
 	5-Resolutions Given by the Agent: A list of resolutions or actions taken by the agent to address the client's concerns.
-	6-Important Conclusion and Summary of Conversation: A concise summary of the conversation, including the main issue, resolution, and any additional actions taken.
-	7-Client Satisfaction: A boolean value (true or false) indicating whether the client seemed satisfied with the agent's response based on their emotions and statements.
+ 	6-Suggestions For Agents:Analyse carefully what the customer asks and what are the response given by the agent.Then decide what better we can suggest the Agent to improve.
+	7-Important Conclusion and Summary of Conversation: A concise summary of the conversation, including the main issue, resolution, and any additional actions taken.
+	8-Client Satisfaction: A boolean value (true or false) indicating whether the client seemed satisfied with the agent's response based on their emotions and statements.
 	
 Input:
 The JSON input provided contains the call transcript with speaker labels, their statements, and emotion labels.
@@ -110,6 +111,7 @@ Your output must be in JSON format, structured as follows:
   "Important Words Used in the Conversation": ["word1", "word2", ...],
   "Questions Asked by the Customer": ["question1", "question2", ...],
   "Resolutions Given by the Agent": ["resolution1", "resolution2", ...],
+  "Suggestion For the Agent" :["Suggestion1", "Suggestion2",...]
   "Important Conclusion and Summary of Conversation": "summary text",
   "Client Satisfaction": true/false
 }
@@ -121,7 +123,7 @@ Here’s an example of how the output should look:
   "Emotion Tracking of Agents": ["neutral", "sympathetic", "neutral", "neutral", "neutral", "neutral", "neutral", "neutral"],
   "Important Words Used in the Conversation": ["billing statement", "late fee", "card expired", "waive", "adjustment", "coverage", "savings"],
   "Questions Asked by the Customer": [
-    "I'm calling because my latest billing statement seems higher than usual, and I don't understand why.",
+    "The client called  because his latest billing statement seems higher than usual, and he don't understand why.",
     "Would you be open to a quick review?"
   ],
   "Resolutions Given by the Agent": [
@@ -129,6 +131,7 @@ Here’s an example of how the output should look:
     "Updated the client's payment method to avoid future issues.",
     "Offered to review the client's current plan for potential savings."
   ],
+  "Suggestion For the agent":["Offer multiple option to cut cost of client".....],
   "Important Conclusion and Summary of Conversation": "The client called regarding an unexpectedly high billing statement due to a late fee. The agent identified the issue as a result of an expired card and waived the late fee. The agent also updated the client's payment details and offered to review their current plan for potential savings. The client expressed relief and gratitude.",
   "Client Satisfaction": true
 }
