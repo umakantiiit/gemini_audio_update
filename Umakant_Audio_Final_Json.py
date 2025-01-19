@@ -150,7 +150,7 @@ model_audio = genai.GenerativeModel(
 )
 
 model_json = genai.GenerativeModel(
-    model_name="gemini-1.5-pro-002",
+    model_name="gemini-2.0-flash-exp",
     system_instruction=system_prompt_json
 )
 
