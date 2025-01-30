@@ -6,10 +6,10 @@ import json
 from groq import Groq
 
 # Configure the generative AI API
-genai.configure(api_key='AIzaSyBulZ3Sru9TqLb38sarxaRuf05dUtsyg9s')
+genai.configure(api_key=st.secrets["gemini_api_key"])
 
 # Initialize Groq client
-groq_client = Groq(api_key="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")
+groq_client = Groq(api_key=st.secrets["groq_key"])
 
 # Helper function to upload files to Gemini
 def upload_to_gemini(path, mime_type=None):
