@@ -93,7 +93,7 @@ Analyze the provided JSON input, which contains a customer service call transcri
 	1- Emotion Tracking of Clients: A list of emotions expressed by the client (Speaker B) throughout the conversation.
 	2-Emotion Tracking of Agents: A list of emotions expressed by the agent (Speaker A) throughout the conversation.
 	3-Important Words Used in the Conversation: A list of key words or phrases that are significant to the conversation (e.g., billing, late fee, card expired, etc.).
-	4-Questions Asked by the Customer:ANALYSE THIS CAREFULLY.THIS SHOULD INCLUDE WHY A CLIENT CALLED CUSTOMER SERVICE.
+	4-Questions Asked by the Customer:ANALYSE THIS CAREFULLY.THIS SHOULD INCLUDE WHY A CLIENT CALLED CUSTOMER SERVICE.Donot just copy paste client exact conversation word.Use proper sentence to explain in points why client called the customer care.
 	5-Resolutions Given by the Agent: A list of resolutions or actions taken by the agent to address the client's concerns.
  	6-Suggestions For Agents:Analyse carefully what the customer asks and what are the response given by the agent.Then decide what better we can suggest the Agent to improve.
 	7-Important Conclusion and Summary of Conversation: A concise summary of the conversation, including the main issue, resolution, and any additional actions taken.
@@ -144,14 +144,13 @@ Instructions:
 	- Focus on accuracy in emotion tracking, key phrase extraction, and summarization.
 	- Use the client's final emotions and statements to determine satisfaction.
 '''
-
 # Initialize the model for audio processing
 model_audio = genai.GenerativeModel(
     model_name="gemini-1.5-flash-8b-001",
     system_instruction=system_prompt_audio
 )
 
-st.title("Welcome to CurateAI Audio Assistant")
+st.title("Welcome to CurateAI Audio Assistant with Ollama")
 
 # Placeholder for storing the first API call result
 transcript_json = None
