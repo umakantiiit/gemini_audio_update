@@ -85,10 +85,7 @@ Example Output:
 
 system_prompt_audio = '''You are a highly skilled AI assistant with a deep understanding of audio analysis, natural language processing, and emotional intelligence. You are meticulous, detail-oriented, and committed to delivering accurate and structured results. Your goal is to provide a comprehensive analysis of the call center audio, ensuring the transcript is clear, emotions are accurately detected, and the output is well-organized for further use.'''
 
-
 system_prompt_json = '''You are an AI trained in analyzing customer service call transcripts. Your expertise lies in emotion detection, summarization, and extracting key insights from conversations. You are meticulous, detail-oriented, and capable of providing structured outputs in JSON format.'''
-
-
 prompt_transcript_to_output = '''
 Analyze the provided JSON input, which contains a customer service call transcript with emotion labels for each speaker. Extract the following details and present them in a structured JSON format:
 	1- Emotion Tracking of Clients: A list of emotions expressed by the client (Speaker B) throughout the conversation.
@@ -145,22 +142,24 @@ Instructions:
 	- Focus on accuracy in emotion tracking, key phrase extraction, and summarization.
 	- Use the client's final emotions and statements to determine satisfaction.
 '''
-
 # Initialize the model for both tasks
 model_audio = genai.GenerativeModel(
-    model_name="gemini-1.5-flash-002",
+    model_name="gemini-2.0-flash-001",
     system_instruction=system_prompt_audio
 )
 
 model_json = genai.GenerativeModel(
-    model_name="gemini-2.0-flash",
+    model_name="gemini-2.5-pro-preview-05-06",
     system_instruction=system_prompt_json
 )
 
 st.title("Welcome to CurateAI Audio Assistant With Gemini")
 
-# Placeholder for storing the first API call result
-transcript_json = None
+# Initialize session state keys if not present
+if "transcript_json" not in st.session_state:
+    st.session_state.transcript_json = None
+if "transcript_txt" not in st.session_state:
+    st.session_state.transcript_txt = None
 
 # Audio file upload section
 uploaded_audio = st.file_uploader("Upload an audio file", type=["mp3", "aac", "wav", "aiff"], accept_multiple_files=False)
@@ -185,39 +184,53 @@ if uploaded_audio is not None:
         if st.button("View Transcript"):
             response_audio = model_audio.generate_content([myaudio, Prompt_for_audio_transcript], generation_config=generation_config)
             try:
-                transcript_json = json.loads(response_audio.text)
-                st.json(transcript_json, expanded=True)
-                
-                st.session_state.transcript_json = transcript_json  # Store the result in session state
-                
-                # Inform the user the first step is completed
-                st.success("GREAT! Transcript generated successfully! You can now proceed to detailed analysis.")
-                
+                transcript = json.loads(response_audio.text)
+                st.session_state.transcript_json = transcript
+                st.json(transcript, expanded=True)
+                st.success("GREAT! Transcript generated successfully! You can now proceed.")
             except json.JSONDecodeError:
                 st.write("Here is the raw output from the model:")
                 st.text(response_audio.text)
 
-# View Detailed Analysis button
-if st.session_state.get("transcript_json") is not None:
-    if st.button("View Detailed Analysis"):
-        transcript_json = st.session_state.transcript_json
-        # Convert transcript JSON to string for the second API call
-        transcript_str = json.dumps(transcript_json)
+# Once JSON transcript is available, allow text file generation
+if st.session_state.transcript_json and not st.session_state.transcript_txt:
+    if st.button("Generate Text File"):
+        # Build plain-text transcript from JSON
+        entries = st.session_state.transcript_json.get("Call Details", {}).get("Transcript", [])
+        lines = []
+        for item in entries:
+            speaker = item.get("Speaker", "")
+            text = item.get("Voice", "")
+            if speaker and text:
+                lines.append(f"{speaker}: {text}")
+        transcript_text = "\n".join(lines)
+        st.session_state.transcript_txt = transcript_text
         
-        # Upload to Gemini and process for detailed analysis
+# Display and download the generated text file
+if st.session_state.transcript_txt:
+    st.text_area("Plain Transcript", value=st.session_state.transcript_txt, height=300)
+    st.download_button(
+        label="Download Transcript Text",
+        data=st.session_state.transcript_txt,
+        file_name="transcript.txt",
+        mime="text/plain"
+    )
+    st.info("You can now proceed to detailed analysis.")
+
+# View Detailed Analysis button (sends JSON, not text)
+if st.session_state.transcript_txt:
+    if st.button("View Detailed Analysis"):
+        transcript_str = json.dumps(st.session_state.transcript_json)
         response_json = model_json.generate_content([transcript_str, prompt_transcript_to_output], generation_config=generation_config)
         try:
             detailed_analysis_json = json.loads(response_json.text)
             st.json(detailed_analysis_json, expanded=True)
-            
-            # Add download button for final JSON output
             st.download_button(
                 label="Download Detailed Analysis JSON",
                 data=json.dumps(detailed_analysis_json, indent=4),
                 file_name="detailed_analysis.json",
                 mime="application/json"
             )
-            
         except json.JSONDecodeError:
             st.write("Here is the raw output from the model:")
             st.text(response_json.text)
